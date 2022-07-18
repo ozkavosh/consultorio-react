@@ -1,0 +1,24 @@
+.patientListContainer{
+    min-height: calc(100vh - 10rem);
+}
+
+.btnRemove{
+    cursor: pointer;
+}
+
+.btnRemove:hover{
+    color: red;
+}
+
+.btnEdit:hover{
+    color: red;
+}
+
+.patientRow:hover div{
+    background-color: gray;
+    color: white;
+}
+
+.patientRow:hover div a{
+    color: white;
+}
