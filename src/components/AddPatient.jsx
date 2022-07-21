@@ -51,8 +51,7 @@ const AddPatient = () => {
           <h2>Agregar Nuevo Paciente</h2>
         </Col>
 
-        <Col>
-          <form onSubmit={submitHandler}>
+        <Col as="form" onSubmit={submitHandler}>
             <label htmlFor="cuil" className="form-label">
               Nro. CUIL
             </label>
@@ -72,10 +71,13 @@ const AddPatient = () => {
               className="form-control"
             />
 
-            <Button type="submit" className="mt-3">
+            <Button type="submit" className="mt-3 me-2">
               Cargar Paciente
             </Button>
-          </form>
+
+            <Button type="reset" className="mt-3">
+              Limpiar
+            </Button>
         </Col>
       </Row>
     </Container>

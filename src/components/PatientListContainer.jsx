@@ -3,14 +3,15 @@ import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAccount } from "../context/AccountContext";
 import { Button, Col, Container, Row } from "react-bootstrap";
-import { BiTrash } from "react-icons/bi";
-import { FaRegEdit } from "react-icons/fa";
+import Swal from "sweetalert2";
 
 import "../css/PatientListContainer.css";
+import Patient from "./Patient";
 
 const PatientListContainer = () => {
   const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
+  const [searchResult, setSearchResult] = useState([]);
   const { token } = useAccount();
 
   useEffect(() => {
@@ -34,8 +35,19 @@ const PatientListContainer = () => {
     })();
   }, [navigate, token]);
 
-  const removePatient = async (id) => {
+  const removePatient = async (id, name) => {
     try {
+      const result = await Swal.fire({
+        title: "Confimar usuario",
+        text: `¿Esta seguro de eliminar el paciente ${name}?`,
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: 'Eliminar',
+        cancelButtonText: 'Cancelar'
+      });
+
+      if(result.isDismissed) return;
+
       const response = await axios.delete(
         `https://ch-simple-login.glitch.me/api/data/${id}`,
         {
@@ -51,6 +63,23 @@ const PatientListContainer = () => {
     }
   };
 
+  const searchPatients = (e) => {
+    e.preventDefault();
+    const search = e.target.search.value.toLowerCase();
+    const filter = patients.filter(
+      (patient) =>
+        patient.cuil.includes(search) ||
+        patient.fullName.toLowerCase().includes(search)
+    );
+    if (!filter.length)
+      return Swal.fire(
+        "Sin resultados",
+        "Su busqueda no devolvió resultados",
+        "error"
+      );
+    setSearchResult(filter);
+  };
+
   return (
     <Container className="patientListContainer">
       <Row>
@@ -64,7 +93,7 @@ const PatientListContainer = () => {
           <h3>Buscar</h3>
         </Col>
         <Col xs={12}>
-          <Row as="form">
+          <Row as="form" onSubmit={searchPatients}>
             <Col xs={5}>
               <input
                 type="text"
@@ -101,30 +130,21 @@ const PatientListContainer = () => {
           </Col>
         </Row>
 
-        {patients.map((patient, index) => (
-          <Row key={index} className="gap-1 justify-content-center patientRow">
-            <Col xs={3} className="text-center">
-              {patient.cuil}
-            </Col>
-            <Col xs={3} className="text-center">
-              {patient.fullName}
-            </Col>
-            <Col xs={3} className="text-center">
-              {patient.consultations}
-            </Col>
-            <Col xs={1} className="text-center">
-              <Link to={`/editar/${patient.id}`}>
-                <FaRegEdit className="btnEdit" />
-              </Link>
-            </Col>
-            <Col xs={1} className="text-center">
-              <BiTrash
-                className="btnRemove"
-                onClick={() => removePatient(patient.id)}
+        {searchResult.length
+          ? searchResult.map((patient, index) => (
+              <Patient
+                patient={patient}
+                index={index}
+                removePatient={removePatient}
               />
-            </Col>
-          </Row>
-        ))}
+            ))
+          : patients.map((patient, index) => (
+              <Patient
+                key={index}
+                patient={patient}
+                removePatient={removePatient}
+              />
+            ))}
       </Row>
 
       <Row className="mt-5">
