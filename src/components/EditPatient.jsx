@@ -8,7 +8,7 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 const EditPatient = () => {
   const [patient, setPatient] = useState({});
   const navigate = useNavigate();
-  const { token } = useAccount();
+  const { token, verifyCuil } = useAccount();
   const { id } = useParams();
   const cuilRef = useRef();
   const fullNameRef = useRef();
@@ -53,6 +53,9 @@ const EditPatient = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     const { cuil, fullName, consultations } = e.target;
+
+    if (cuil.value !== patient.cuil && verifyCuil(cuil.value))
+      return Swal.fire("Error!", "El CUIL ingresado ya existe.", "error");
     if (!cuil.value || !fullName.value || !consultations.value)
       return Swal.fire("Error!", "No pueden quedar campos vacios.", "error");
 

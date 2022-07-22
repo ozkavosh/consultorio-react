@@ -7,7 +7,7 @@ import { Button, Col, Container, Row } from "react-bootstrap";
 
 const AddPatient = () => {
   const navigate = useNavigate();
-  const { token } = useAccount();
+  const { token, verifyCuil } = useAccount();
 
   useEffect(() => {
     if (!token) return navigate("/");
@@ -16,6 +16,9 @@ const AddPatient = () => {
   const submitHandler = async (e) => {
     e.preventDefault();
     const { cuil, fullName, consultations } = e.target;
+
+    if (verifyCuil(cuil.value))
+      return Swal.fire("Error!", "El CUIL ingresado ya existe.", "error");
     if (!cuil.value || !fullName.value || !consultations.value)
       return Swal.fire("Error!", "No pueden quedar campos vacios.", "error");
 
@@ -52,32 +55,28 @@ const AddPatient = () => {
         </Col>
 
         <Col as="form" onSubmit={submitHandler}>
-            <label htmlFor="cuil" className="form-label">
-              Nro. CUIL
-            </label>
-            <input type="number" name="cuil" className="form-control" />
+          <label htmlFor="cuil" className="form-label">
+            Nro. CUIL
+          </label>
+          <input type="number" name="cuil" className="form-control" />
 
-            <label htmlFor="cuil" className="form-label">
-              Nombre Completo
-            </label>
-            <input type="text" name="fullName" className="form-control" />
+          <label htmlFor="cuil" className="form-label">
+            Nombre Completo
+          </label>
+          <input type="text" name="fullName" className="form-control" />
 
-            <label htmlFor="cuil" className="form-label">
-              Consultas del mes
-            </label>
-            <input
-              type="number"
-              name="consultations"
-              className="form-control"
-            />
+          <label htmlFor="cuil" className="form-label">
+            Consultas del mes
+          </label>
+          <input type="number" name="consultations" className="form-control" />
 
-            <Button type="submit" className="mt-3 me-2">
-              Cargar Paciente
-            </Button>
+          <Button type="submit" className="mt-3 me-2">
+            Cargar Paciente
+          </Button>
 
-            <Button type="reset" className="mt-3">
-              Limpiar
-            </Button>
+          <Button type="reset" className="mt-3">
+            Limpiar
+          </Button>
         </Col>
       </Row>
     </Container>

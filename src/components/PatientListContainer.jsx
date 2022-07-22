@@ -10,9 +10,8 @@ import Patient from "./Patient";
 
 const PatientListContainer = () => {
   const navigate = useNavigate();
-  const [patients, setPatients] = useState([]);
   const [searchResult, setSearchResult] = useState([]);
-  const { token } = useAccount();
+  const { token, patients, setPatients } = useAccount();
 
   useEffect(() => {
     (async () => {
@@ -33,7 +32,7 @@ const PatientListContainer = () => {
         console.log(err.message);
       }
     })();
-  }, [navigate, token]);
+  }, [navigate, token, setPatients]);
 
   const removePatient = async (id, name) => {
     try {
