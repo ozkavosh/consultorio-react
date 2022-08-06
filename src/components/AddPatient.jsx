@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useNavigate } from "react-router-dom";
 import { useAccount } from "../context/AccountContext";
 import { Button, Col, Container, Row } from "react-bootstrap";
+import "../css/AddPatient.css";
 
 const AddPatient = () => {
   const navigate = useNavigate();
@@ -48,7 +49,7 @@ const AddPatient = () => {
   };
 
   return (
-    <Container>
+    <Container className="addPatient">
       <Row>
         <Col xs={12}>
           <h2>Agregar Nuevo Paciente</h2>

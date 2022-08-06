@@ -1,54 +1,29 @@
-import React from "react";
-import { Navbar as BsNavbar, Container, Nav, NavDropdown } from "react-bootstrap";
+import { useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { FaMedrt } from "react-icons/fa";
+import { FaMedrt, FaListAlt, FaUserPlus } from "react-icons/fa";
+import { CgLogOut } from "react-icons/cg";
 import { useAccount } from "../context/AccountContext";
 import "../css/Navbar.css";
 
 const Navbar = () => {
   const { token, setToken } = useAccount();
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
-    <BsNavbar className="mb-2 navbar" bg="dark" expand="lg" variant="dark">
-      <Container>
-        <BsNavbar.Brand>
-          <Link className="text-decoration-none" to="/">
-            <h1 className="text-light fs-3"><FaMedrt/> Consultorio</h1>
-          </Link>
-        </BsNavbar.Brand>
-        <BsNavbar.Toggle aria-controls="navBar" />
-        <BsNavbar.Collapse id="navBar" className="justify-content-lg-end">
-          <Nav>
-            <NavLink
-              to="/listado"
-              className="nav-link"
-              activeclassname="active"
-            >
-              LISTADO
-            </NavLink>
-            <NavLink
-              to="/agregar"
-              className="nav-link"
-              activeclassname="active"
-            >
-              AGREGAR
-            </NavLink>
-            { token && <NavDropdown
-              id="nav-dropdown-dark-example"
-              title="Perfil"
-              menuVariant="dark"
-            >
-              <NavDropdown.Item href="#action/3.1">Ver perfil</NavDropdown.Item>
-              <NavDropdown.Divider></NavDropdown.Divider>
-              <NavDropdown.Item onClick={() => setToken("")}>
-                Salir
-              </NavDropdown.Item>
-            </NavDropdown>}
-          </Nav>
-        </BsNavbar.Collapse>
-      </Container>
-    </BsNavbar>
+    <div className={`sidenavbar ${isOpen ? "open": "closed"}`} onClick={() => setIsOpen(!isOpen)}>
+      <h1> <span class="navIcon"><FaMedrt/></span> { isOpen && "Consultorio"} </h1>
+
+      <ul className="navlinks">
+        <li> <NavLink to="/listado"> <span class="navIcon"><FaListAlt/></span> {isOpen && "Listado"}</NavLink> </li>
+        <li> <NavLink to="/agregar"> <span class="navIcon"><FaUserPlus/></span> {isOpen && "Cargar"}</NavLink> </li>
+      </ul>
+
+      <div className="userWidget" onClick={() => token && setToken("")}>
+        {isOpen && (token ? "Salir" : "Ingresar")} <span class="navIcon"><CgLogOut/></span>
+      </div>
+    </div>
   );
 };
 
 export default Navbar;
+

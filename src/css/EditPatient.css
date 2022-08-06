@@ -1,0 +1,6 @@
+.editPatient{
+    height: 88.4vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}

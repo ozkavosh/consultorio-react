@@ -5,6 +5,7 @@ import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { Container, Row, Col } from "react-bootstrap";
 import { useAccount } from "../context/AccountContext";
+import '../css/Login.css';
 
 const Login = () => {
   const reactSwal = withReactContent(Swal);
@@ -91,7 +92,7 @@ const Login = () => {
   };
 
   return (
-    <Container>
+    <Container className="login">
       <Row>
         <Col>
           <h2>Ingresar</h2>

@@ -4,6 +4,7 @@ import Swal from "sweetalert2";
 import { useNavigate, useParams } from "react-router-dom";
 import { useAccount } from "../context/AccountContext";
 import { Button, Col, Container, Row } from "react-bootstrap";
+import "../css/EditPatient.css";
 
 const EditPatient = () => {
   const [patient, setPatient] = useState({});
@@ -87,7 +88,7 @@ const EditPatient = () => {
   };
 
   return (
-    <Container>
+    <Container className="editPatient">
       <Row>
         <Col xs={12}>
           <h2>Editar Paciente</h2>

@@ -1,0 +1,51 @@
+.sidenavbar{
+    background:black;
+    position: absolute;
+    display: flex;
+    flex-flow: column wrap;
+    align-items: center;
+    justify-content: space-between;
+    width: var(--width);
+    height: 100vh;
+    transition: width 0.2s linear;
+}
+
+.sidenavbar > h1{
+    color: white;
+    font-size: 1rem;
+}
+
+.navlinks{
+    list-style-type: none;
+    padding: 0;
+}
+
+.navlinks li a {
+    color: white;
+    text-decoration: none;
+    text-transform: uppercase;
+    pointer-events: var(--pointer-events);
+}
+
+.userWidget{
+    color: white;
+    pointer-events: var(--pointer-events);
+    cursor: pointer;
+}
+
+.navIcon{
+    font-size: var(--icon-size);
+}
+
+.open{
+    --width: 17rem;
+    --pointer-events: auto;
+    --icon-size: 1rem;
+}
+
+.closed{
+    --width: 5rem;
+    --pointer-events: none;
+    --icon-size: 1.4rem;
+}
+
