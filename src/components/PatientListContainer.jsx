@@ -1,62 +1,49 @@
-import axios from "axios";
-import { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { useAccount } from "../context/AccountContext";
+import { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
+import { getFirestore, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import Swal from "sweetalert2";
-
-import "../css/PatientListContainer.css";
+import { useAccount } from "../context/AccountContext";
+import PrescriptionModal from "./PrescriptionModal";
 import Patient from "./Patient";
 
+import "../css/PatientListContainer.css";
+
 const PatientListContainer = () => {
-  const navigate = useNavigate();
   const [searchResult, setSearchResult] = useState([]);
-  const { token, patients, setPatients } = useAccount();
+  const [patient, setPatient] = useState({ monthlyPrescriptions: [] });
+  const [show, setShow] = useState(false);
+  const { currentUser, patients, setPatients } = useAccount();
 
   useEffect(() => {
-    (async () => {
-      try {
-        if (!token) return navigate("/");
-        console.log("Se hizo una consulta en PLContainer");
-        const response = await axios.get(
-          "https://ch-simple-login.glitch.me/api/data",
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }
-        );
-        setPatients(response.data);
-      } catch (err) {
-        console.log("Se hizo una consulta en PLContainer");
-        console.log(err.message);
-      }
-    })();
-  }, [navigate, token, setPatients]);
+    const db = getFirestore();
+    onSnapshot(doc(db, "users", currentUser.uid), (doc) => {
+      setPatients(doc.data().patients);
+    });
+  }, [currentUser.uid, setPatients]);
 
-  const removePatient = async (id, name) => {
+  const prescriptionList = (cuil) => {
+    setPatient(patients.find((p) => p.cuil === cuil));
+    setShow(true);
+  };
+
+  const removePatient = async (cuil, name) => {
+    const db = getFirestore();
     try {
       const result = await Swal.fire({
         title: "Confimar usuario",
         text: `¿Esta seguro de eliminar el paciente ${name}?`,
         icon: "question",
         showCancelButton: true,
-        confirmButtonText: 'Eliminar',
-        cancelButtonText: 'Cancelar'
+        confirmButtonText: "Eliminar",
+        cancelButtonText: "Cancelar",
       });
 
-      if(result.isDismissed) return;
+      if (result.isDismissed) return;
 
-      const response = await axios.delete(
-        `https://ch-simple-login.glitch.me/api/data/${id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      setPatients(response.data);
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        patients: patients.filter((p) => p.cuil !== cuil),
+      });
     } catch (err) {
       console.log(err);
     }
@@ -68,7 +55,7 @@ const PatientListContainer = () => {
     const filter = patients.filter(
       (patient) =>
         patient.cuil.includes(search) ||
-        patient.fullName.toLowerCase().includes(search)
+        patient.name.toLowerCase().includes(search)
     );
     if (!filter.length)
       return Swal.fire(
@@ -118,8 +105,8 @@ const PatientListContainer = () => {
           <Col xs={3} className="bg-dark text-center">
             Nombre
           </Col>
-          <Col xs={3} className="bg-dark text-center">
-            Consultas del mes
+          <Col xs={2} className="bg-dark text-center">
+            Consultas
           </Col>
           <Col xs={1} className="bg-dark text-center">
             Editar
@@ -135,6 +122,7 @@ const PatientListContainer = () => {
                 patient={patient}
                 index={index}
                 removePatient={removePatient}
+                prescriptionList={prescriptionList}
               />
             ))
           : patients.map((patient, index) => (
@@ -142,6 +130,7 @@ const PatientListContainer = () => {
                 key={index}
                 patient={patient}
                 removePatient={removePatient}
+                prescriptionList={prescriptionList}
               />
             ))}
       </Row>
@@ -153,6 +142,8 @@ const PatientListContainer = () => {
           </Link>
         </Col>
       </Row>
+
+      <PrescriptionModal show={show} setShow={setShow} patient={patient}/>
     </Container>
   );
 };

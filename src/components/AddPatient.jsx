@@ -1,44 +1,42 @@
-import axios from "axios";
-import { useEffect } from "react";
 import Swal from "sweetalert2";
-import { useNavigate } from "react-router-dom";
+import { useEffect } from "react";
 import { useAccount } from "../context/AccountContext";
+import { getFirestore, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { Button, Col, Container, Row } from "react-bootstrap";
+import verifyCuil from "../utils/verifyCuil";
 import "../css/AddPatient.css";
 
 const AddPatient = () => {
-  const navigate = useNavigate();
-  const { token, verifyCuil } = useAccount();
+  const { patients, currentUser, setPatients } = useAccount();
 
   useEffect(() => {
-    if (!token) return navigate("/");
-  }, [navigate, token]);
+    const db = getFirestore();
+    const unsub = onSnapshot(doc(db, "users", currentUser.uid), (doc) => {
+      setPatients(doc.data().patients);
+    });
+
+    return () => {
+      unsub();
+    };
+  }, [currentUser.uid, setPatients]);
 
   const submitHandler = async (e) => {
     e.preventDefault();
-    const { cuil, fullName, consultations } = e.target;
+    const db = getFirestore();
+    const { cuil, fullName } = e.target;
 
-    if (verifyCuil(cuil.value))
+    if (verifyCuil(patients, cuil.value))
       return Swal.fire("Error!", "El CUIL ingresado ya existe.", "error");
-    if (!cuil.value || !fullName.value || !consultations.value)
+    if (!cuil.value || !fullName.value)
       return Swal.fire("Error!", "No pueden quedar campos vacios.", "error");
 
     try {
-      await axios.post(
-        "https://ch-simple-login.glitch.me/api/data",
-        {
-          cuil: cuil.value,
-          fullName: fullName.value,
-          consultations: consultations.value,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      console.log("Se hizo una consulta en APatient");
+      await updateDoc(doc(db, "users", currentUser.uid), {
+        patients: [
+          ...patients,
+          { cuil: cuil.value, name: fullName.value, monthlyPrescriptions: [] },
+        ],
+      });
 
       Swal.fire("Exito!", "Paciente cargado con éxito.", "success");
     } catch (err) {
@@ -65,11 +63,6 @@ const AddPatient = () => {
             Nombre Completo
           </label>
           <input type="text" name="fullName" className="form-control" />
-
-          <label htmlFor="cuil" className="form-label">
-            Consultas del mes
-          </label>
-          <input type="number" name="consultations" className="form-control" />
 
           <Button type="submit" className="mt-3 me-2">
             Cargar Paciente

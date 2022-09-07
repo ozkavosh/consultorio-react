@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import { getAuth, onAuthStateChanged } from "firebase/auth";
 
 const AccountContext = createContext();
 
@@ -7,15 +8,24 @@ const useAccount = () => {
 };
 
 const AccountContextProvider = ({ children }) => {
-  const [token, setToken] = useState("");
+  const [currentUser, setCurrentUser] = useState(null);
   const [patients, setPatients] = useState([]);
+  const auth = getAuth();
 
-  const verifyCuil = (cuil) => {
-    return patients.some(patient => { console.log(cuil, patient.cuil); return patient.cuil === cuil});
-  }
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (user) => {
+        setCurrentUser(user);
+    });
+
+    return () => {
+      unsub();
+    };
+  }, [auth]);
 
   return (
-    <AccountContext.Provider value={{ token, patients, setToken, setPatients, verifyCuil }}>
+    <AccountContext.Provider
+      value={{ currentUser, patients, setPatients }}
+    >
       {children}
     </AccountContext.Provider>
   );

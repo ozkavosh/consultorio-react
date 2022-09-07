@@ -8,6 +8,7 @@
     width: var(--width);
     height: 100vh;
     transition: width 0.2s linear;
+    overflow: hidden;
 }
 
 .sidenavbar > h1{

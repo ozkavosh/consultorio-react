@@ -1,20 +1,24 @@
-import { useEffect } from "react";
-import axios from "axios";
 import { useNavigate } from "react-router-dom";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { Container, Row, Col } from "react-bootstrap";
-import { useAccount } from "../context/AccountContext";
-import '../css/Login.css';
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
+import {
+  getFirestore,
+  doc,
+  collection,
+  setDoc
+} from "firebase/firestore"
+import "../css/Login.css";
 
 const Login = () => {
   const reactSwal = withReactContent(Swal);
   const navigate = useNavigate();
-  const { token, setToken } = useAccount();
-
-  useEffect(() => {
-    token && navigate("/listado");
-  }, [navigate, token]);
+  const auth = getAuth();
 
   const loginHandler = async (e) => {
     e.preventDefault();
@@ -30,11 +34,11 @@ const Login = () => {
     }
 
     try {
-      const response = await axios.post(
-        "https://ch-simple-login.glitch.me/api/login",
-        { email, password }
+     await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
       );
-      setToken(response.data.token);
 
       navigate("/listado");
 
@@ -55,37 +59,27 @@ const Login = () => {
 
   const registerHandler = async (e) => {
     e.preventDefault();
-    const username = e.target.username.value;
     const email = e.target.email.value;
     const password = e.target.password.value;
-
-    if (!email || !password || !username) {
-      return reactSwal.fire({
-        title: "Error!",
-        text: "No se pueden ingresar campos vacios!",
-        icon: "error",
-      });
-    }
+    const db = getFirestore();
 
     try {
-      await axios.post(
-        "https://ch-simple-login.glitch.me/api/register",
-        { username, email, password }
-      );
+      const userRef = await createUserWithEmailAndPassword(auth, email, password);
 
-      console.log("Se hizo una consulta en Login");
+      await setDoc(doc(collection(db,"users"), userRef.user.uid), {
+        patients: []
+      })
 
       reactSwal.fire({
         title: "Exito!",
-        text: `Registrado correctamente ahora puedes ingresar con tu cuenta!`,
+        text: `Se creó su usuario ahora puede ingresar!`,
         icon: "success",
       });
     } catch (err) {
       console.log("Se hizo una consulta en Login");
-      console.error(err.message);
       reactSwal.fire({
         title: "Error!",
-        text: `El email ya se encuentra registrado!`,
+        text: `${err.message}`,
         icon: "error",
       });
     }
@@ -125,19 +119,6 @@ const Login = () => {
         <Col>
           <h2>Crear Cuenta</h2>
           <form onSubmit={registerHandler}>
-          <label className="form-label" htmlFor="username">
-              Nombre de usuario
-            </label>
-            <input
-              className="form-control mb-2"
-              type="text"
-              name="username"
-              minLength={4}
-              maxLength={9}
-              placeholder="Ingrese su usuario..."
-              pattern="[a-zA-Z0-9]*"
-              required
-            />
             <label className="form-label" htmlFor="email">
               Correo
             </label>
