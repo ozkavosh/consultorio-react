@@ -1,6 +1,8 @@
 import Swal from "sweetalert2";
-import { useEffect } from "react";
+import axios from "axios";
+import { useEffect, useState } from "react";
 import { useAccount } from "../context/AccountContext";
+import {BeatLoader} from "react-spinners";
 import { getFirestore, doc, updateDoc, onSnapshot } from "firebase/firestore";
 import { Button, Col, Container, Row } from "react-bootstrap";
 import verifyCuil from "../utils/verifyCuil";
@@ -8,6 +10,9 @@ import "../css/AddPatient.css";
 
 const AddPatient = () => {
   const { patients, currentUser, setPatients } = useAccount();
+  const [ cuil, setCuil ] = useState("");
+  const [ name, setName ] = useState("");
+  const [ loading, setLoading ] = useState(false);
 
   useEffect(() => {
     const db = getFirestore();
@@ -46,6 +51,21 @@ const AddPatient = () => {
     }
   };
 
+  const validateCuil = async (e) => {
+    if(!cuil) return Swal.fire("Error!", "Revise el campo CUIL e intente nuevamente.", "error");
+    try{
+      setLoading(true);
+      const request = await axios.get(`https://ch-simple-login.glitch.me/api/data/person?dni=${cuil}`);
+      setCuil(request.data.cuil.replaceAll("-",""));
+      setName(request.data.name);
+    }catch{
+      Swal.fire("Error!", "Hubo un error validando el cuil.", "error");
+    }
+    finally{
+      setLoading(false);
+    }
+  }
+
   return (
     <Container className="addPatient">
       <Row>
@@ -54,21 +74,25 @@ const AddPatient = () => {
         </Col>
 
         <Col as="form" onSubmit={submitHandler}>
+          <div>
           <label htmlFor="cuil" className="form-label">
             Nro. CUIL
           </label>
-          <input type="number" name="cuil" className="form-control" />
+          <input type="number" name="cuil" className="form-control" value={cuil} onChange={(e) => setCuil(e.target.value)} />
+
+          <button type="button" className="btn btn-primary my-2" disabled={loading} onClick={(e) => validateCuil(e)}>{ loading ? <BeatLoader color="#fff"/> : "Validar" }</button>
+          </div>
 
           <label htmlFor="cuil" className="form-label">
             Nombre Completo
           </label>
-          <input type="text" name="fullName" className="form-control" />
+          <input type="text" name="fullName" className="form-control" value={name} onChange={(e) => setName(e.target.value)} />
 
-          <Button type="submit" className="mt-3 me-2">
+          <Button type="submit" className="mt-3 me-2" disabled={loading}>
             Cargar Paciente
           </Button>
 
-          <Button type="reset" className="mt-3">
+          <Button type="reset" className="mt-3" disabled={loading}>
             Limpiar
           </Button>
         </Col>
